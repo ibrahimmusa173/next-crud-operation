@@ -1,93 +1,80 @@
+
 "use client";
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 
 export default function Home() {
-  const [items, setItems] = useState([]);
-  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
 
-  // FIX: Define the async logic inside the effect to satisfy the linter
-  useEffect(() => {
-    const loadItems = async () => {
-      try {
-        const res = await fetch("/api/items");
-        if (!res.ok) {
-          console.error("API error: Status", res.status);
-          return;
-        }
-        const data = await res.json();
-        setItems(data);
-      } catch (err) {
-        console.error("Failed to load items:", err);
-      }
-    };
+  const sendToWhatsApp = () => {
+    if (!message.trim()) return;
 
-    loadItems();
-  }, []); // Run only once when the page loads
+    const phoneNumber = "923149500765";
+    const encodedMessage = encodeURIComponent(message);
 
-  const addItem = async (e) => {
-    e.preventDefault();
-    if (!title) return;
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-    try {
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-      });
-      
-      if (res.ok) {
-        const newItem = await res.json();
-        setItems((prev) => [...prev, newItem]); // Instant update
-        setTitle("");
-      }
-    } catch (err) {
-      console.error("Add error:", err);
-    }
-  };
+    window.open(whatsappURL, "_blank");
 
-  const deleteItem = async (id) => {
-    try {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setItems((prev) => prev.filter((item) => item._id !== id)); // Instant update
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
+    setMessage("");
   };
 
   return (
-    <div className="p-10 max-w-lg mx-auto bg-white min-h-screen text-black">
-      <h1 className="text-3xl font-bold mb-6">MongoDB CRUD</h1>
-      <form onSubmit={addItem} className="flex gap-2 mb-10">
-        <input 
-          className="border p-3 flex-1 rounded text-black" 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
-          placeholder="Enter a new task..."
-        />
-        <button className="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition">
-          Add
-        </button>
-      </form>
+    <main className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="bg-white shadow-xl rounded-2xl w-full max-w-md overflow-hidden border">
+        {/* Header */}
+        <div className="bg-green-600 text-white p-4 flex items-center gap-3">
+          <div className="w-12 h-12 bg-white text-green-600 rounded-full flex items-center justify-center font-bold text-xl">
+            W
+          </div>
 
-      <ul className="space-y-4">
-        {items.length === 0 ? (
-          <p className="text-gray-500">No items found.</p>
-        ) : (
-          items.map((item) => (
-            <li key={item._id} className="flex justify-between items-center p-4 border rounded shadow-sm bg-gray-50">
-              <span className="text-lg font-medium">{item.title}</span>
-              <button 
-                onClick={() => deleteItem(item._id)} 
-                className="text-red-500 font-bold hover:text-red-700 transition"
-              >
-                Delete
-              </button>
-            </li>
-          ))
-        )}
-      </ul>
-    </div>
+          <div>
+            <h1 className="font-bold text-lg">WhatsApp Chat</h1>
+            <p className="text-sm text-green-100">
+              Usually replies instantly
+            </p>
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className="p-5 space-y-4 bg-gray-50 min-h-[300px]">
+          <div className="bg-white p-3 rounded-xl shadow-sm max-w-[80%] border">
+            <p className="text-gray-800">
+              Hi 👋
+              <br />
+              How can we help you?
+            </p>
+          </div>
+        </div>
+
+        {/* Input */}
+        <div className="p-4 border-t flex gap-2 bg-white">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-500 text-black"
+          />
+
+          <button
+            onClick={sendToWhatsApp}
+            className="bg-green-600 hover:bg-green-700 text-white px-5 rounded-xl font-semibold transition"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/923149500765"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl transition"
+      >
+        💬
+      </a>
+    </main>
   );
 }
